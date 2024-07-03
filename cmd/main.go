@@ -7,6 +7,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
 	"github.com/joho/godotenv"
+	"github.com/steelthedev/supra-paints/connections"
+	"github.com/steelthedev/supra-paints/data"
 	"github.com/steelthedev/supra-paints/handlers"
 	"github.com/steelthedev/supra-paints/middlewares"
 	"github.com/steelthedev/supra-paints/utils"
@@ -42,9 +44,18 @@ func main() {
 		slog.Info(err.Error())
 	}
 
+	dbURL := os.Getenv("DB_URL")
+
+	db := connections.InitDB(dbURL)
+	// Services
+
+	userService := data.NewUserService(db)
+
 	appHandler := handlers.AppHandler{
 		EmailService: &smtpService,
 	}
+
+	authHandler := handlers.NewAuthHandler(userService)
 
 	app.Get("/", appHandler.IndexHandler)
 	app.Get("/about", appHandler.AboutHanlder)
@@ -56,5 +67,7 @@ func main() {
 
 	app.Post("/send-contact-mail", appHandler.SendContactMail)
 
+	// Auth
+	app.Get("/signup", authHandler.CreateNewAdmin)
 	app.Listen(":3000")
 }

@@ -3,6 +3,8 @@ package utils
 import (
 	"reflect"
 	"regexp"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func IsValidEmail(email string) bool {
@@ -23,4 +25,8 @@ func IsEmpty(data interface{}) bool {
 		return d.IsNil()
 	}
 	return false
+}
+
+func HashPassword(password string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 }
